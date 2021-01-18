@@ -1,0 +1,4 @@
+.Rhistory
+.RData
+^README\.html$
+inst/extdata

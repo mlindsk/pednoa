@@ -1,0 +1,6 @@
+Makefile
+^LICENSE\.md$
+^README\.Rmd$
+^README.html$
+^data-raw$
+^\.github$
