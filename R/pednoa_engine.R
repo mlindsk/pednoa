@@ -142,16 +142,21 @@ pednoa_engine <- function(
   cl <- jti::cpt_list(cpts)
   rm(cpts)
 
-  cp <- jti::compile(cl, joint_vars = mvec_chr, save_graph = TRUE, opt = "min_fill")
-
   e <- unlist(lapply(evidence, function(e) {
     structure(paste0(sort(e[2:3]), collapse = "/"), names = e[1])
   }))
 
+  cp <- jti::compile(cl, e, joint_vars = mvec_chr)
 
   # NOTE: Test if evidence is correct from a pedigree point of view!
-  # Just test for zero sparta? 
+  # Just test for zero sparta?
   j    <- jti::jt(cp, e)
+
+  xx <- j$charge$C[[1]]
+  dns <- sparta::dim_names(xx)
+  (prod(dim(xx)) + ncol(xx)) / prod(sapply(dns, length))
+  sparta::sparsity(xx)
+  
   pout <- .pmf_unique_alleles(j, mvec_chr, afreq)
   
   structure(

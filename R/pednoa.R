@@ -16,7 +16,7 @@
 #' # Allele frequencies:
 #' # -------------------
 #' 
-#' p1 <- rbeta(6, 3,6)
+#' p1 <- rbeta(25, 3,6)
 #' p1 <- p1 / sum(p1)
 #' 
 #' p2 <- rbeta(6, 3,6)
@@ -132,3 +132,10 @@ pednoa <- function(
   attr(out, "ell") <- NULL
   structure(out, dimnames = structure(list(names(out)), names = "P(Nm)"))
 }
+
+# p <- pednoa(
+#   list(p1, p2, p3, p4),
+#   c(1, 5),
+#   c(1, 2, 6),
+#   list(c(3, 1, 2), c(4, 1, 2), c(5, 4, 6))
+# )
