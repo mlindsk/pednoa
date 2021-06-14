@@ -4,7 +4,15 @@
 \alias{pednoa}
 \title{Pedigree Number of different Alleles}
 \usage{
-pednoa(afreq_list, mvec, founder_vec, nonfounder_list, evidence_list = NULL)
+pednoa(
+  afreq_list,
+  mvec,
+  founder_vec,
+  nonfounder_list,
+  evidence_list = NULL,
+  locus_wise = TRUE,
+  ncores = 1
+)
 }
 \arguments{
 \item{afreq_list}{A list with allele frequencies. One for each DNA loci}
@@ -17,6 +25,11 @@ pednoa(afreq_list, mvec, founder_vec, nonfounder_list, evidence_list = NULL)
 nonfounders on the form \code{(child, paternal_index, maternal_index)}}
 
 \item{evidence_list}{A list of evidence. See the examples for details.}
+
+\item{locus_wise}{Logical. \code{FALSE} if the pmfs should be convoluted}
+
+\item{ncores}{Integer. The number of cores to be used in connection with
+parallelizing some of the internal code.}
 }
 \description{
 Find the probability distribution of m different pedigree members having
@@ -31,28 +44,22 @@ the pedigree. The user is responsible for entering correct evidence.
 # Allele frequencies:
 # -------------------
 
-p1 <- rbeta(6, 3,6)
+p1 <- rbeta(6, 3, 6)
 p1 <- p1 / sum(p1)
 
-p2 <- rbeta(6, 3,6)
+p2 <- rbeta(6, 3, 6)
 p2 <- p2 / sum(p2)
-
-p3 <- rbeta(6, 3,6)
-p3 <- p3 / sum(p3)
-
-p4 <- rbeta(6, 3, 6)
-p4 <- p4 / sum(p4)
 
 # Evidence:
 # -------------------
 
 e <- list(
   list(3, c(1, 2), list(c(2, 2), c(1, 3))),
-  list(1, c(2, 3, 4), list(c(2, 3), c(1, 1), c(2, 3)))
+  list(1, 2, list(c(2, 3)))
 )
 
-# Individual 3 has genotype (2,2) on loci 1 and (1,1) on loci two.
-# Individual 1 has genotype (2,3) on loci 2, (1,1) on loci 3 and (2,3) on loci 4 
+# Individual 3 has genotype (2,2) on loci 1 and (1,3) on loci two.
+# Individual 1 has genotype (2,2) on loci 2
 
 
 # Consider the pedigree:
@@ -67,15 +74,18 @@ e <- list(
 #              5
 
 # We let 1 and 5 be the individuals of interest. That is, we calculate the
-# probability of seeing 4,3,...,16 different alleles over four locis for 1 and 5
-# Note: They cannot have 16 different alleles due to the evidence.
+# probability of seeing different alleles over two locis for 1 and 5 given
+# the evidence.
 
 p <- pednoa(
-  list(p1, p2, p3, p4),
+  list(p1, p2),
   c(1, 5),
   c(1, 2, 6),
   list(c(3, 1, 2), c(4, 1, 2), c(5, 4, 6)),
-  e
+  e,
+  locus_wise = FALSE
 )
+
+p
 
 }

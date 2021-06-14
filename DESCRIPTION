@@ -1,6 +1,6 @@
 Package: pednoa
 Type: Package
-Title: Pedigree Number of Shared Alleles
+Title: Pedigree Number of Different Alleles
 Version: 0.1.0.9999
 Date: 2020-11-30
 Authors@R: 
@@ -9,7 +9,7 @@ Authors@R:
 	   email = "mads@math.aau.dk",
            role = c("aut", "cre")))
 Description: Calculate the probability distribution of the
-	     numbers of shared alleles between pedigree members.
+	     numbers of different alleles between pedigree members.
 Encoding: UTF-8
 Depends: R (>= 3.0.0)
 LazyData: true
@@ -18,4 +18,5 @@ RoxygenNote: 7.1.1
 Imports: 
     jti,
     sparta,
+    parallel,
     glue

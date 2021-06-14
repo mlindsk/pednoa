@@ -1,5 +1,5 @@
 ---
-title: "pednoa: Pedigree Number of different Alleles"
+title: "pednoa: Pedigree Number of Different Alleles"
 output:
   github_document
 ---
@@ -20,8 +20,8 @@ knitr::opts_chunk$set(
 
 ## Installation
 
-You can install the current stable release of the package by using the `devtools` package:
+You can install the current devel-vesion of the package as
 
 ```{r, eval = FALSE}
-devtools::install_github("mlindsk/pednoa", build_vignettes = FALSE)
+remotes::install_github("mlindsk/pednoa", build_vignettes = FALSE)
 ```
