@@ -72,6 +72,8 @@ pednoa <- function(
                    evidence_list = NULL
                    ) {
 
+  # TODO: locus_wise = TRUE
+  
   if (!is.list(afreq_list)) stop("afreq_list must be a list even if it contains a single element")
   
   if (!sum_to_one_(afreq_list)) stop("Some alle frequencies do not sum to one", call. = FALSE)
@@ -103,7 +105,6 @@ pednoa <- function(
   attr(pmfs[[1]], "ell") <- 2L
 
   convolute <- function(p1, p2) {
-
     ell <- attr(p1, "ell")
     n_current_max <- min(as.integer(names(p1[length(p1)])) + length(p2), ell* 2*nmvec)
     ns <- ell:n_current_max

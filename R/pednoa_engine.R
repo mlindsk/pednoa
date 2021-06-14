@@ -1,7 +1,6 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #                    HELPERS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 .split_genotype <- function(x) strsplit(x, "/")[[1]]
 
 .unique_genotypes_from_parents <- function(p1_genotype, p2_genotype) {
@@ -16,8 +15,8 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #               CPT CONSTRUCTORS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-## af <- c(.1,.2,.7)
-## ua = .map_chr(1:length(af), as.character)  
+# af <- c(.1,.2,.7)
+# ua = .map_chr(1:length(af), as.character)  
 
 cpt_founder <- function(name, af) {
   af_names <- seq_along(af)
@@ -33,7 +32,7 @@ cpt_founder <- function(name, af) {
   )
 }
 
-## cpt_founder2(c("Founder"), af)
+# cpt_founder(c("Founder"), c(.1, .2, .3, .4))
 
 cpt_child_parents <- function(names, gts){
   # The child name must be the first element in names
@@ -59,8 +58,6 @@ cpt_child_parents <- function(names, gts){
 
   A
 }
-
-## cpt_child_parents2(c("C", "P1", "P2"), names(cpt_founder(c("Founder"), af)))
 
 make_founder_cpts <- function(founder_vec, afreq) {
   generic_cpt_founder <- cpt_founder(0, afreq)
