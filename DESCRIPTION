@@ -2,7 +2,7 @@ Package: pednoa
 Type: Package
 Title: Pedigree Number of Different Alleles
 Version: 0.1.0.9999
-Date: 2020-11-30
+Date: 2021-06-14
 Authors@R: 
   c(person(given = "Mads",
            family = "Lindskou",
@@ -11,12 +11,11 @@ Authors@R:
 Description: Calculate the probability distribution of the
 	     numbers of different alleles between pedigree members.
 Encoding: UTF-8
-Depends: R (>= 3.0.0)
+Depends: R (>= 3.5.0)
 LazyData: true
 License: MIT + file LICENSE
 RoxygenNote: 7.1.1
 Imports: 
     jti,
     sparta,
-    parallel,
-    glue
+    parallel
