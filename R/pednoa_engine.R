@@ -1,106 +1,21 @@
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#                    HELPERS
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-.split_genotype <- function(x) strsplit(x, "/")[[1]]
-
-.unique_genotypes_from_parents <- function(p1_genotype, p2_genotype) {
-  combs. <- expand.grid(
-    .split_genotype(p1_genotype),
-    .split_genotype(p2_genotype),
-    stringsAsFactors = FALSE
-  )
-  unique(apply(combs., 1L, function(x) paste0(sort(as.numeric(x)), collapse = "/")))
-}
-
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#               CPT CONSTRUCTORS
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# af <- c(.1,.2,.7, .1, .1)
-# ua = .map_chr(1:length(af), as.character)  
-
-# cpt_founder <- function(name, af) {
-#   af_names <- seq_along(af)
-#   het_comb <- utils::combn(af_names, 2)
-#   hw_prob  <- c(af^2, apply(het_comb, 2L, function(x) af[x[1]] * af[x[2]]) * 2)
-#   het_names <- apply(het_comb, 2L, paste, collapse = "/")
-#   hom_names <- paste(af_names, af_names, sep = "/")
-#   genotypes <- c(hom_names, het_names)
-#   array(
-#     data = hw_prob,
-#     dim = length(genotypes),
-#     dimnames = structure(list(genotypes), names = name)
-#   )
-# }
-
-# # cpt_founder(c("Founder"), c(.1, .2, .3, .4))
-
-# cpt_child_parents <- function(names, gts){
-#   # The child name must be the first element in names
-#   # gts: as the names returned from cpt_fouders
-
-#   ngts <- length(gts)
-#   A <- array(0L,
-#     dim = rep(ngts, 3L),
-#     dimnames = structure(list(gts, gts, gts), names = names)
-#   )
-
-#   dim_A12 <- dimnames(A)[1:2]
-  
-#   for(g2 in gts) {
-#     A_g2 <- matrix(0L, ngts, ngts)
-#     dimnames(A_g2) <- dim_A12
-#     for (g1 in gts) {
-#       ugts <- .unique_genotypes_from_parents(g1, g2)
-#       A_g2[ugts, g1] <- 1 / length(ugts)
-#     }
-#     A[, , g2] <- A_g2
-#   }
-
-#   A
-# }
-
-# make_founder_cpts <- function(founder_vec, afreq) {
-#   generic_cpt_founder <- cpt_founder(0, afreq)
-#   lapply(founder_vec, function(x) {
-#     cpt <- generic_cpt_founder
-#     names(dimnames(cpt)) <- x
-#     cpt
-#   })
-# }
-
-# make_child_parents_cpts <- function(genotypes, nonfounder_list) {
-#   generic_cpt_child_parents <- cpt_child_parents(1:3, genotypes)
-#   lapply(nonfounder_list, function(x) {
-#     cpt <- generic_cpt_child_parents
-#     names(dimnames(cpt)) <- x
-#     cpt
-#   })
-# }
-
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#        EXTRACT NUMBER OF DIFFERENT ALLELES
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-.n_unique_col <- function(x, j) {
+n_unique_col <- function(x, j) {
   cell <- sparta::get_cell_name(x, j)
-  length(unique(unlist(strsplit(cell, "/"))))
+  as.integer(length(unique(unlist(strsplit(cell, "/")))))
 }
 
-.pmf_unique_alleles <- function(j, mvec_chr, afreq) {
+pmf_unique_alleles <- function(j, mvec_chr, afreq, ncores = 1) {
 
-  mvec_clique_idx <- which(.map_lgl(j$cliques, function(x) {
-    all(mvec_chr %in% x)
-  }))[1]
+  mvec_clique_idx <- as.integer(substr(attr(j, "clique_root"), 2, 2))
+  mvec_clique     <- j$charge$C[[mvec_clique_idx]]
+  mvec_pmf        <- sparta::marg(mvec_clique, setdiff(names(mvec_clique), mvec_chr))
+
+  number_of_different_alleles <- unlist(parallel::mclapply(
+    mc.cores = ncores, X = 1:ncol(mvec_pmf), FUN = function(k) {
+    cell <- mvec_pmf[, k, drop = TRUE]
+    n_unique_col(mvec_pmf, cell)
+  }))
   
-  mvec_clique <- j$charge$C[[mvec_clique_idx]]
-  mvec_pmf <- sparta::marg(mvec_clique, setdiff(names(mvec_clique), mvec_chr))
-
-  # NOTE: Can this be speeded up? Possibly with some C code yes (so do it?!)
-  number_of_different_alleles <- apply(
-    mvec_pmf,
-    2L,
-    function(j) .n_unique_col(mvec_pmf, j)
-  )
-
+  
   unique_ndifferent_alleles <- unique(number_of_different_alleles)
   sorted_unique_ndifferent_alleles <- sort(unique_ndifferent_alleles)
   
@@ -116,6 +31,7 @@
   pout
 }
 
+
 pednoa_engine <- function(
                    afreq,
                    mvec,             # vector of rascals indices
@@ -126,8 +42,6 @@ pednoa_engine <- function(
                    ) {
 
   mvec_chr        <- as.character(mvec)
-  # founder_cpts    <- make_founder_cpts(founder_vec, afreq)
-  # nonfounder_cpts <- make_child_parents_cpts(names(founder_cpts[[1L]]), nonfounder_list)
   founder_cpts <- make_founder_cpts_sparse(founder_vec, afreq)
   nonfounder_cpts <- make_child_parents_cpts_sparse(nonfounder_list, length(afreq), ncores)
 
@@ -143,12 +57,9 @@ pednoa_engine <- function(
     structure(paste0(sort(e[2:3]), collapse = "/"), names = e[1])
   }))
 
-  cp <- jti::compile(cl, root_node = mvec_chr[1], joint_vars = mvec_chr)
-
-  # NOTE: Test if evidence is correct from a pedigree point of view!
-  # Just test for zero sparta?
-  j    <- jti::jt(cp, e)
-  pout <- .pmf_unique_alleles(j, mvec_chr, afreq)
+  cp   <- jti::compile(cl, evidence = e, joint_vars = mvec_chr)
+  j    <- jti::jt(cp, evidence = e, propagate = "collect")
+  pout <- pmf_unique_alleles(j, mvec_chr, afreq, ncores)
   
   structure(
     as.array(pout),
@@ -158,3 +69,4 @@ pednoa_engine <- function(
     )
   )
 }
+

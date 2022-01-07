@@ -135,9 +135,12 @@ pednoa <- function(
   structure(out, dimnames = structure(list(names(out)), names = "P(Nm)"))
 }
 
+# a <- rbeta(8, 3, 6); a <- a / sum(a)
+
 # p <- pednoa(
-#   list(p1, p2, p3, p4),
-#   c(1, 5),
-#   c(1, 2, 6),
-#   list(c(3, 1, 2), c(4, 1, 2), c(5, 4, 6))
+#   list(a),
+#   c(1, 7, 8),
+#   c(1, 2, 3, 6),
+#   list(c(4, 1, 2), c(5, 1, 2), c(7, 3, 4), c(8, 5, 6)),
+#   ncores = 3
 # )

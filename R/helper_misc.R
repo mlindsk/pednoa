@@ -11,6 +11,10 @@ eq_empt_lst <- function(x) inherits(x, "list") && length(x) == 0L
 sum_to_one_ <- function(afreq_list) {
   sum(.map_dbl(afreq_list, function(x) sum(x) > 0.999999)) == length(afreq_list)
 }
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#                    HELPERS
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.split_genotype <- function(x) strsplit(x, "/")[[1]]
 
 is_whole_number <- function(x) identical(round(x), x)
 
@@ -21,7 +25,6 @@ is_child_parent <- function(x, fv) {
     x[1] %ni% fv
 }
 
-## MISC
 extract_evidence <- function(evidence_list, nloci) {
   ids <- lapply(1:nloci, function(l) {
     lapply(evidence_list, function(e) {
